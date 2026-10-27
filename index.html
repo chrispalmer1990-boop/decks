@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCARS 2401 - USS Nautilus NCC-73515</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&family=Oswald:wght@500;700&display=swap');
+
+        :root {
+            --lcars-orange: #ff9900;
+            --lcars-purple: #cc99cc;
+            --lcars-gold: #ffcc00;
+            --lcars-blue: #3399cc;
+            --lcars-red: #cc3333;
+            --lcars-peach: #ff9966;
+            --lcars-tangerine: #ff6600;
+            --lcars-lavender: #9999cc;
+            --lcars-bg: #000000;
+        }
+
+        body {
+            background-color: var(--lcars-bg);
+            color: var(--lcars-gold);
+            font-family: 'Antonio', 'Oswald', 'Arial Narrow', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* LCARS Custom Shapes & UI Elements */
+        .lcars-elbow-left-top {
+            width: 140px;
+            height: 70px;
+            border-top-left-radius: 40px;
+            background-color: var(--lcars-orange);
+        }
+
+        .lcars-bar {
+            background-color: var(--lcars-orange);
+            height: 20px;
+        }
+
+        .lcars-btn {
+            background-color: var(--lcars-purple);
+            color: #000;
+            font-weight: bold;
+            border-radius: 20px;
+            padding: 8px 16px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .lcars-btn:hover {
+            filter: brightness(1.25);
+            box-shadow: 0 0 8px currentColor;
+        }
+        .lcars-btn:active {
+            transform: scale(0.96);
+        }
+
+        .lcars-btn-orange { background-color: var(--lcars-orange); }
+        .lcars-btn-blue { background-color: var(--lcars-blue); color: #000; }
+        .lcars-btn-gold { background-color: var(--lcars-gold); color: #000; }
+        .lcars-btn-red { background-color: var(--lcars-red); color: #fff; }
+        .lcars-btn-peach { background-color: var(--lcars-peach); color: #000; }
+        .lcars-btn-lavender { background-color: var(--lcars-lavender); color: #000; }
+
+        /* Status Colors for Schematics */
+        .status-normal { fill: #3399cc; fill-opacity: 0.6; stroke: #3399cc; }
+        .status-damaged { fill: #cc3333; fill-opacity: 0.8; stroke: #ff9900; animation: lcars-blink 1.2s infinite alternate; }
+        .status-destroyed { fill: #222222; fill-opacity: 0.9; stroke: #ff0000; stroke-dasharray: 2 2; }
+        .status-demolished { fill: #000000; fill-opacity: 0.95; stroke: #444444; }
+        .status-upgraded { fill: #ffcc00; fill-opacity: 0.7; stroke: #ffffff; }
+
+        @keyframes lcars-blink {
+            0% { fill-opacity: 0.3; }
+            100% { fill-opacity: 0.95; }
+        }
+
+        /* Scrollbar LCARS styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--lcars-orange);
+            border-radius: 4px;
+        }
+
+        .lcars-panel-border {
+            border: 2px solid var(--lcars-orange);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col overflow-hidden p-2">
+
+    <!-- Top LCARS Header Banner -->
+    <div class="flex items-center gap-2 mb-2">
+        <div class="lcars-elbow-left-top flex items-end justify-end pb-2 pr-3 text-black font-bold text-xl select-none">
+            73515
+        </div>
+        <div class="flex-grow flex flex-col gap-1">
+            <div class="h-8 bg-[var(--lcars-orange)] rounded-r-full flex items-center px-4 justify-between">
+                <span class="text-black text-xl font-bold tracking-widest">USS NAUTILUS • NCC-73515 • AKIRA CLASS SYSTEM CONTROL</span>
+                <span class="text-black font-mono text-sm" id="stardate-clock">STARDATE 77412.9</span>
+            </div>
+            <div class="h-3 bg-[var(--lcars-purple)] rounded-r-full flex justify-end px-2">
+                <span class="text-[9px] text-black font-mono">SECTOR 001 // SYSTEM DIAGNOSTIC RUNNING</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dynamic Workspace -->
+    <div class="flex-grow flex gap-3 overflow-hidden">
+
+        <!-- Left LCARS Sidebar Navigation -->
+        <div class="w-48 flex flex-col gap-2 shrink-0">
+            <div class="bg-[var(--lcars-peach)] text-black font-bold p-2 text-center rounded-l-full rounded-r-md text-lg">
+                DECK NAV
+            </div>
+            <button onclick="switchView('schematics')" class="lcars-btn lcars-btn-orange text-left justify-start">PRIMARY SCHEMATIC</button>
+            <button onclick="openModal('bridgeModal')" class="lcars-btn lcars-btn-blue text-left justify-start">01 MAIN BRIDGE</button>
+            <button onclick="openModal('scienceModal')" class="lcars-btn lcars-btn-gold text-left justify-start">04 SCIENCE LABS</button>
+            <button onclick="openModal('torpedoModal')" class="lcars-btn lcars-btn-red text-left justify-start">06 TORPEDO BAYS</button>
+            <button onclick="openModal('shuttleModal')" class="lcars-btn lcars-btn-lavender text-left justify-start">10 MAIN SHUTTLEBAY</button>
+            <button onclick="openModal('engineeringModal')" class="lcars-btn lcars-btn-peach text-left justify-start">12 MAIN ENGINEERING</button>
+
+            <!-- PHASE CYCLE CONTROL PANEL -->
+            <div class="bg-[var(--lcars-tangerine)] p-2 rounded-xl text-black flex flex-col gap-1.5 mt-1 border-2 border-amber-400 shadow-md">
+                <div class="font-bold text-center text-xs tracking-wider border-b border-black/30 pb-0.5">PHASE CYCLE CONTROL</div>
+                <div class="flex items-center gap-1">
+                    <span class="text-[10px] font-bold">CYCLES:</span>
+                    <input type="number" id="phaseCycleInput" value="1" min="1" max="100" class="w-full bg-black text-amber-400 font-mono text-center text-xs font-bold rounded py-0.5 border border-black focus:outline-none">
+                </div>
+                <div class="grid grid-cols-4 gap-1">
+                    <button onclick="quickSetCycles(1)" class="bg-black/20 hover:bg-black/40 text-black font-bold text-[10px] py-0.5 rounded">+1</button>
+                    <button onclick="quickSetCycles(5)" class="bg-black/20 hover:bg-black/40 text-black font-bold text-[10px] py-0.5 rounded">+5</button>
+                    <button onclick="quickSetCycles(10)" class="bg-black/20 hover:bg-black/40 text-black font-bold text-[10px] py-0.5 rounded">+10</button>
+                    <button onclick="quickSetCycles(25)" class="bg-black/20 hover:bg-black/40 text-black font-bold text-[10px] py-0.5 rounded">+25</button>
+                </div>
+                <button onclick="executePhaseCycle()" class="lcars-btn lcars-btn-gold py-1 text-xs font-black shadow-inner">EXECUTE CYCLES</button>
+            </div>
+
+            <div class="mt-auto bg-[var(--lcars-purple)] p-3 rounded-t-xl flex flex-col gap-2 text-black text-xs">
+                <div class="font-bold border-b border-black pb-1">VESSEL CONDITION</div>
+                <div class="flex justify-between"><span>HULL INTEGRITY:</span><span id="sidebar-hull">84%</span></div>
+                <div class="flex justify-between"><span>ACTIVE TEAMS:</span><span id="sidebar-teams">0</span></div>
+                <div class="flex justify-between"><span>DAMAGED ROOMS:</span><span id="sidebar-damaged">0</span></div>
+                <button onclick="soundEngine.playBeep(800, 'sine', 0.1)" class="lcars-btn lcars-btn-gold mt-2 text-[10px] py-1">AUDIO TEST</button>
+            </div>
+        </div>
+
+        <!-- Right Main Content Area (Schematics Display View) -->
+        <div class="flex-grow bg-black lcars-panel-border p-3 flex flex-col relative overflow-hidden">
+            <!-- View Controls Header -->
+            <div class="flex justify-between items-center mb-2 border-b border-[var(--lcars-orange)] pb-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-[var(--lcars-orange)] font-bold text-xl">CROSS-SECTION DECK ALLOCATION MAP</span>
+                    <span class="bg-[var(--lcars-blue)] text-black px-2 py-0.5 rounded text-xs font-bold">CLICK ROOM TO OPEN MODULE</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetShipStatus()" class="lcars-btn lcars-btn-red py-1 text-xs">RANDOMIZE DAMAGE</button>
+                    <button onclick="repairAllRooms()" class="lcars-btn lcars-btn-gold py-1 text-xs">REPAIR ALL</button>
+                </div>
+            </div>
+
+            <!-- Ship Cross Section Interactive SVG Canvas Container -->
+            <div class="flex-grow relative flex items-center justify-center overflow-auto p-2" id="svg-schematic-container">
+                <!-- Akira Class Dynamic Interactive SVG Render -->
+                <svg id="akira-schematic" viewBox="0 0 1000 500" class="w-full h-full max-h-[600px] select-none">
+                    <defs>
+                        <!-- Glow Effects -->
+                        <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    <!-- Background Grid -->
+                    <pattern id="lcars-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#112233" stroke-width="0.5"/>
+                    </pattern>
+                    <rect width="1000" height="500" fill="url(#lcars-grid)" />
+
+                    <!-- Akira Class Outer Structural Wireframe Outline -->
+                    <g stroke="#ff9900" stroke-width="1.5" fill="none" opacity="0.4">
+                        <!-- Saucer Section Top Cut -->
+                        <path d="M 250 150 C 400 120, 650 120, 750 170 C 820 200, 850 250, 750 300 C 650 350, 400 350, 250 320 Z"/>
+                        <!-- Catamaran / Rollbar Upper Structure -->
+                        <path d="M 400 135 L 450 70 L 650 70 L 700 135 Z"/>
+                        <!-- Twin Nacelle Structures Upper & Lower -->
+                        <path d="M 100 80 L 350 130 L 320 160 L 80 110 Z"/>
+                        <path d="M 100 390 L 350 340 L 320 310 L 80 360 Z"/>
+                    </g>
+
+                    <!-- Decks Grid Lines Background -->
+                    <g stroke="#3399cc" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.3">
+                        <line x1="150" y1="100" x2="850" y2="100"/>
+                        <line x1="150" y1="140" x2="850" y2="140"/>
+                        <line x1="150" y1="180" x2="850" y2="180"/>
+                        <line x1="150" y1="220" x2="850" y2="220"/>
+                        <line x1="150" y1="260" x2="850" y2="260"/>
+                        <line x1="150" y1="300" x2="850" y2="300"/>
+                        <line x1="150" y1="340" x2="850" y2="340"/>
+                        <line x1="150" y1="380" x2="850" y2="380"/>
+                    </g>
+
+                    <!-- Interactive Deck Rooms rendering group -->
+                    <g id="rooms-group">
+                        <!-- Rooms rendered programmatically by JavaScript for exact dynamic binding -->
+                    </g>
+
+                    <!-- Deck Indicator Overlay Labels -->
+                    <g font-size="10" fill="#ffcc00" font-family="Antonio">
+                        <text x="860" y="85">DECK 01 - CATAMARAN / BRIDGE</text>
+                        <text x="860" y="125">DECK 03 - TAC COMMAND & SENSORS</text>
+                        <text x="860" y="165">DECK 05 - SCIENCE & SICKBAY</text>
+                        <text x="860" y="205">DECK 07 - ARMORY & WEAPONS</text>
+                        <text x="860" y="245">DECK 09 - CREW HABITATION</text>
+                        <text x="860" y="285">DECK 11 - SHUTTLEBAYS 1-3</text>
+                        <text x="860" y="325">DECK 13 - MAIN ENGINEERING</text>
+                        <text x="860" y="365">DECK 15 - CARGO & CARGO BAY</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Bottom Diagnostic Deck Info Bar -->
+            <div class="h-14 bg-black border-t border-[var(--lcars-orange)] flex items-center justify-between px-4">
+                <div class="flex items-center gap-4">
+                    <span class="text-[var(--lcars-peach)] font-bold">SELECTED ROOM:</span>
+                    <span id="selected-room-name" class="text-white text-lg">Hover or Click a Room</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#3399cc] inline-block rounded"></span> NORMAL</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#cc3333] inline-block rounded animate-pulse"></span> DAMAGED</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#ffcc00] inline-block rounded"></span> UPGRADED</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#222222] border border-red-500 inline-block rounded"></span> DESTROYED</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-black border border-gray-600 inline-block rounded"></span> DEMOLISHED</span>
+                </div>
+            </div>
+            <!-- Notification Log Bar -->
+            <div id="cycleNotificationLog" class="h-6 bg-slate-950 border-t border-slate-800 text-[11px] font-mono text-amber-400 px-4 flex items-center overflow-hidden">
+                SYSTEM LOG: STATIONARY / ALL SYSTEMS NOMINAL
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS SECTION ==================== -->
+
+    <!-- Modal Generic Outer Template -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+
+        <!-- 1. BRIDGE MODAL -->
+        <div id="bridgeModal" class="modal-content hidden w-full max-w-5xl bg-black border-2 border-[var(--lcars-blue)] rounded-xl p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-blue)] pb-2">
+                <span class="text-2xl font-bold text-[var(--lcars-blue)]">COMMAND BRIDGE • MAIN VIEWSCREEN PERSPECTIVE</span>
+                <button onclick="closeModal()" class="lcars-btn lcars-btn-red py-1 px-4">X CLOSE</button>
+            </div>
+            <!-- Captain's Chair Perspective Canvas/SVG Render -->
+            <div class="relative h-[450px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex flex-col justify-between p-4">
+                <!-- Outer Space Starfield (Main Viewscreen View) -->
+                <canvas id="bridgeViewscreenCanvas" class="absolute inset-0 w-full h-full"></canvas>
+
+                <!-- Foreground Captain's Chair Consoles Overlay -->
+                <div class="relative z-10 text-center pointer-events-none">
+                    <span class="bg-black/70 border border-[var(--lcars-gold)] text-[var(--lcars-gold)] px-4 py-1 rounded text-sm tracking-widest font-mono">
+                        MAIN VIEWSCREEN • FORWARD TACTICAL DISPLAY
+                    </span>
+                </div>
+
+                <!-- Captain Chair Handles & Foreground Controls (Overlay HTML) -->
+                <div class="relative z-10 flex justify-between items-end">
+                    <!-- Left Helm Console -->
+                    <div class="w-64 bg-black/90 border-2 border-[var(--lcars-orange)] p-3 rounded-tr-2xl text-xs space-y-2 pointer-events-auto">
+                        <div class="text-[var(--lcars-orange)] font-bold text-center border-b border-orange-500 pb-1">HELM CONTROL</div>
+                        <div class="flex justify-between"><span>IMPULSE POWER:</span><span class="text-green-400 font-mono">100%</span></div>
+                        <div class="flex justify-between"><span>WARP FACTOR:</span><span class="text-yellow-400 font-mono">5.0 READY</span></div>
+                        <div class="flex justify-between"><span>HEADING:</span><span class="text-blue-400 font-mono">247.2 MARK 12</span></div>
+                        <button onclick="soundEngine.playBeep(600,'sine',0.1)" class="w-full lcars-btn lcars-btn-orange py-1 text-[10px] mt-1">ENGAGE WARP</button>
+                    </div>
+
+                    <!-- Center Armrest Command Buttons -->
+                    <div class="bg-black/90 border-t-4 border-[var(--lcars-gold)] px-6 py-3 rounded-t-3xl text-center space-y-2 pointer-events-auto">
+                        <div class="text-[var(--lcars-gold)] font-bold text-sm">CAPTAIN'S CHAIR CONTROL MODULE</div>
+                        <div class="flex gap-2">
+                            <button onclick="soundEngine.playRedAlert()" class="lcars-btn lcars-btn-red text-xs py-1">RED ALERT</button>
+                            <button onclick="soundEngine.playBeep(523.25, 'triangle', 0.2)" class="lcars-btn lcars-btn-gold text-xs py-1">HAIL FREQUENCY</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Ops Console -->
+                    <div class="w-64 bg-black/90 border-2 border-[var(--lcars-purple)] p-3 rounded-tl-2xl text-xs space-y-2 pointer-events-auto">
+                        <div class="text-[var(--lcars-purple)] font-bold text-center border-b border-purple-500 pb-1">OPERATIONS CONTROL</div>
+                        <div class="flex justify-between"><span>SHIELDS:</span><span class="text-cyan-400 font-mono">100% ONLINE</span></div>
+                        <div class="flex justify-between"><span>SENSORS:</span><span class="text-green-400 font-mono">LONG RANGE</span></div>
+                        <div class="flex justify-between"><span>TARGETING:</span><span class="text-red-400 font-mono">NO LOCK</span></div>
+                        <button onclick="soundEngine.playBeep(900,'sine',0.1)" class="w-full lcars-btn lcars-btn-blue py-1 text-[10px] mt-1">SCAN SECTOR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. SCIENCE LAB MODAL -->
+        <div id="scienceModal" class="modal-content hidden w-full max-w-4xl bg-black border-2 border-[var(--lcars-gold)] rounded-xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-gold)] pb-2">
+                <span class="text-2xl font-bold text-[var(--lcars-gold)]">SCIENCE LABS • RESEARCH & ANALYSIS MATRIX</span>
+                <button onclick="closeModal()" class="lcars-btn lcars-btn-red py-1 px-4">X CLOSE</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Research Action Input Form -->
+                <div class="bg-slate-950 p-4 border border-[var(--lcars-gold)] rounded-lg space-y-3">
+                    <div class="text-lg font-bold text-[var(--lcars-gold)]">NEW RESEARCH TASK</div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">ANALYSIS/PROJECT DESCRIPTION:</label>
+                        <input type="text" id="scienceTaskInput" placeholder="e.g. Tachyon Particle Analysis" class="w-full bg-black border border-[var(--lcars-gold)] p-2 rounded text-white font-mono text-sm focus:outline-none focus:border-yellow-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">CYCLES DURATION (SECONDS):</label>
+                        <input type="number" id="scienceCyclesInput" value="10" min="2" max="120" class="w-full bg-black border border-[var(--lcars-gold)] p-2 rounded text-white font-mono text-sm focus:outline-none focus:border-yellow-300">
+                    </div>
+                    <button onclick="startScienceResearch()" class="w-full lcars-btn lcars-btn-gold py-2 text-sm">INITIATE ANALYSIS</button>
+                </div>
+
+                <!-- Active Projects List -->
+                <div class="bg-slate-950 p-4 border border-[var(--lcars-gold)] rounded-lg flex flex-col">
+                    <div class="text-lg font-bold text-[var(--lcars-gold)] mb-2">ACTIVE SENSOR & LAB TASKS</div>
+                    <div id="scienceTasksList" class="flex-grow overflow-y-auto space-y-2 max-h-[250px] pr-1">
+                        <!-- Tasks dynamically populated -->
+                        <div class="text-slate-500 italic text-xs">No research tasks currently active.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. MAIN ENGINEERING MODAL -->
+        <div id="engineeringModal" class="modal-content hidden w-full max-w-5xl bg-black border-2 border-[var(--lcars-peach)] rounded-xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-peach)] pb-2">
+                <span class="text-2xl font-bold text-[var(--lcars-peach)]">MAIN ENGINEERING • TEAM MANAGEMENT & REPAIRS</span>
+                <button onclick="closeModal()" class="lcars-btn lcars-btn-red py-1 px-4">X CLOSE</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Team Allocation Control -->
+                <div class="bg-slate-950 p-4 border border-[var(--lcars-peach)] rounded-lg space-y-3">
+                    <div class="text-lg font-bold text-[var(--lcars-peach)]">DISPATCH ENGINEERING TEAM</div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">TASK TYPE:</label>
+                        <select id="engTaskType" onchange="toggleRoomSelect()" class="w-full bg-black border border-[var(--lcars-peach)] p-2 rounded text-white font-mono text-xs">
+                            <option value="Repair Room">Repair Room</option>
+                            <option value="Repair Hull">Repair Hull Integrity (+15%)</option>
+                            <option value="Craft Torpedoes">Craft Torpedoes (+10 Photon/Quantum)</option>
+                            <option value="Upgrade Room">Upgrade Room</option>
+                            <option value="Demolish Room">Demolish Room</option>
+                            <option value="Build Room">Build New Room</option>
+                            <option value="Build Shuttle">Build Shuttle (+1)</option>
+                            <option value="Build Fighter">Build Fighter (+1)</option>
+                        </select>
+                    </div>
+
+                    <div id="roomSelectContainer">
+                        <label class="block text-xs text-slate-400 mb-1">TARGET ROOM:</label>
+                        <select id="engRoomSelect" class="w-full bg-black border border-[var(--lcars-peach)] p-2 rounded text-white font-mono text-xs">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">REQUIRED CYCLES (SEC):</label>
+                        <input type="number" id="engCyclesInput" value="8" min="3" max="60" class="w-full bg-black border border-[var(--lcars-peach)] p-2 rounded text-white font-mono text-xs">
+                    </div>
+
+                    <button onclick="dispatchEngTeam()" class="w-full lcars-btn lcars-btn-peach py-2 text-sm">ASSIGN TEAM</button>
+                </div>
+
+                <!-- Active Tasks List & Progress -->
+                <div class="md:col-span-2 bg-slate-950 p-4 border border-[var(--lcars-peach)] rounded-lg flex flex-col">
+                    <div class="text-lg font-bold text-[var(--lcars-peach)] mb-2">ACTIVE ENGINEERING OPERATIONS</div>
+                    <div id="engTasksList" class="flex-grow overflow-y-auto space-y-2 max-h-[300px] pr-1">
+                        <div class="text-slate-500 italic text-xs">No engineering teams dispatched.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. TORPEDO BAYS MODAL -->
+        <div id="torpedoModal" class="modal-content hidden w-full max-w-4xl bg-black border-2 border-[var(--lcars-red)] rounded-xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-red)] pb-2">
+                <span class="text-2xl font-bold text-[var(--lcars-red)] font-mono">TACTICAL • TORPEDO LAUNCH CONTROL</span>
+                <button onclick="closeModal()" class="lcars-btn lcars-btn-red py-1 px-4">X CLOSE</button>
+            </div>
+
+            <!-- Torpedo Inventory Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                <div class="bg-red-950/40 border border-red-600 p-3 rounded-lg">
+                    <div class="text-xs text-red-300">FORWARD PHOTON</div>
+                    <div id="fwd-photon-count" class="text-2xl font-bold text-red-400 font-mono">100</div>
+                </div>
+                <div class="bg-red-950/40 border border-red-600 p-3 rounded-lg">
+                    <div class="text-xs text-red-300">AFT PHOTON</div>
+                    <div id="aft-photon-count" class="text-2xl font-bold text-red-400 font-mono">100</div>
+                </div>
+                <div class="bg-cyan-950/40 border border-cyan-600 p-3 rounded-lg">
+                    <div class="text-xs text-cyan-300">FORWARD QUANTUM</div>
+                    <div id="fwd-quantum-count" class="text-2xl font-bold text-cyan-400 font-mono">88</div>
+                </div>
+                <div class="bg-cyan-950/40 border border-cyan-600 p-3 rounded-lg">
+                    <div class="text-xs text-cyan-300">AFT QUANTUM</div>
+                    <div id="aft-quantum-count" class="text-2xl font-bold text-cyan-400 font-mono">87</div>
+                </div>
+            </div>
+
+            <!-- Launcher Firing Stations -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Photon Torpedo Launcher Control -->
+                <div class="bg-slate-950 border border-red-600 p-4 rounded-lg flex flex-col gap-3">
+                    <div class="text-red-500 font-bold text-lg border-b border-red-800 pb-1 flex justify-between">
+                        <span>PHOTON LAUNCHERS</span>
+                        <span class="text-xs font-mono text-red-400">CLASS VI YIELD</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Standard antimatter payload torpedoes loaded in forward twin tubes and aft launcher.</p>
+                    <div class="flex gap-2">
+                        <button onclick="fireTorpedo('photon', 'fwd')" class="flex-1 lcars-btn lcars-btn-red py-2 text-xs">FIRE FWD PHOTON</button>
+                        <button onclick="fireTorpedo('photon', 'aft')" class="flex-1 lcars-btn lcars-btn-red py-2 text-xs">FIRE AFT PHOTON</button>
+                    </div>
+                </div>
+
+                <!-- Quantum Torpedo Launcher Control -->
+                <div class="bg-slate-950 border border-cyan-600 p-4 rounded-lg flex flex-col gap-3">
+                    <div class="text-cyan-400 font-bold text-lg border-b border-cyan-800 pb-1 flex justify-between">
+                        <span>QUANTUM LAUNCHERS</span>
+                        <span class="text-xs font-mono text-cyan-400">ZERO-POINT YIELD</span>
+                    </div>
+                    <p class="text-xs text-slate-400">High-yield zero-point energy weapons configured in Akira hull bow pod.</p>
+                    <div class="flex gap-2">
+                        <button onclick="fireTorpedo('quantum', 'fwd')" class="flex-1 lcars-btn lcars-btn-blue py-2 text-xs">FIRE FWD QUANTUM</button>
+                        <button onclick="fireTorpedo('quantum', 'aft')" class="flex-1 lcars-btn lcars-btn-blue py-2 text-xs">FIRE AFT QUANTUM</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Firing FX Canvas/Visualizer Area -->
+            <div class="h-32 bg-black border border-slate-800 rounded-lg relative overflow-hidden flex items-center justify-center">
+                <canvas id="torpedoCanvas" class="w-full h-full"></canvas>
+                <div id="torpedoLog" class="absolute bottom-2 left-2 text-xs font-mono text-yellow-400">LAUNCH SYSTEM READY.</div>
+            </div>
+        </div>
+
+        <!-- 5. SHUTTLEBAY MODAL -->
+        <div id="shuttleModal" class="modal-content hidden w-full max-w-5xl bg-black border-2 border-[var(--lcars-lavender)] rounded-xl p-4 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-[var(--lcars-lavender)] pb-2">
+                <span class="text-2xl font-bold text-[var(--lcars-lavender)]">AUXILIARY CRAFT • SHUTTLEBAY INVENTORY</span>
+                <button onclick="closeModal()" class="lcars-btn lcars-btn-red py-1 px-4">X CLOSE</button>
+            </div>
+
+            <!-- Fleet Inventory Control -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Standard Shuttles Control Panel -->
+                <div class="bg-slate-950 border border-[var(--lcars-lavender)] p-4 rounded-lg flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="text-[var(--lcars-lavender)] font-bold text-lg border-b border-purple-800 pb-1 flex justify-between">
+                            <span>TYPE-9 STANDARD SHUTTLES</span>
+                            <span id="shuttle-count-display" class="text-yellow-400 font-mono text-xl">3</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">Short-range transport and reconnaissance auxiliary personnel craft.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs">ADJUST COUNT:</span>
+                        <button onclick="adjustCraftCount('shuttle', -1)" class="lcars-btn lcars-btn-red px-3 py-0.5 text-xs">-</button>
+                        <button onclick="adjustCraftCount('shuttle', 1)" class="lcars-btn lcars-btn-gold px-3 py-0.5 text-xs">+</button>
+                        <button onclick="launchCraft('Type-9 Shuttle')" class="ml-auto lcars-btn lcars-btn-lavender py-2 px-4 text-xs">LAUNCH SHUTTLE</button>
+                    </div>
+                </div>
+
+                <!-- Attack Fighters Control Panel -->
+                <div class="bg-slate-950 border border-[var(--lcars-orange)] p-4 rounded-lg flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="text-[var(--lcars-orange)] font-bold text-lg border-b border-orange-800 pb-1 flex justify-between">
+                            <span>PEREGRINE ATTACK FIGHTERS</span>
+                            <span id="fighter-count-display" class="text-yellow-400 font-mono text-xl">6</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">Fast response interceptors equipped with pulse phasers and light torpedoes.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs">ADJUST COUNT:</span>
+                        <button onclick="adjustCraftCount('fighter', -1)" class="lcars-btn lcars-btn-red px-3 py-0.5 text-xs">-</button>
+                        <button onclick="adjustCraftCount('fighter', 1)" class="lcars-btn lcars-btn-gold px-3 py-0.5 text-xs">+</button>
+                        <button onclick="launchCraft('Peregrine Fighter')" class="ml-auto lcars-btn lcars-btn-orange py-2 px-4 text-xs">LAUNCH FIGHTER</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Craft Interior Cockpit Launch Display View -->
+            <div id="craftDisplayWindow" class="h-64 bg-slate-950 border border-slate-700 rounded-lg p-3 relative flex flex-col justify-between overflow-hidden">
+                <div class="flex justify-between text-xs border-b border-slate-800 pb-1">
+                    <span class="text-[var(--lcars-gold)] font-bold" id="craftDisplayTitle">CRAFT COCKPIT INTERIOR VIEW FEED</span>
+                    <span class="text-green-400 font-mono" id="craftDisplayStatus">BAY STATUS: IDLE</span>
+                </div>
+
+                <!-- SVG Cockpit Visualization -->
+                <div class="flex-grow flex items-center justify-center relative" id="craftCockpitGraphic">
+                    <div class="text-slate-600 text-sm italic">Select a craft to launch to open cockpit telemetry stream.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AUDIO SYNTHESIZER AND APPLICATION JS LOGIC -->
+    <script>
+        /* ==================== WEB AUDIO API SYNTHESIZER ==================== */
+        class LcarsAudioEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playBeep(freq = 750, type = 'sine', duration = 0.08) {
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            }
+
+            playPhotonTorpedo() {
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    // Synthesize classic photon chirp / burst
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.35);
+
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } catch(e){}
+            }
+
+            playQuantumTorpedo() {
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    // Quantum Torpedo metallic resonance chirp
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(1200, now + 0.15);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.4);
+
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } catch(e){}
+            }
+
+            playRedAlert() {
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.linearRampToValueAtTime(800, now + 0.4);
+                    osc.frequency.linearRampToValueAtTime(400, now + 0.8);
+
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.8);
+                } catch(e){}
+            }
+        }
+
+        const soundEngine = new LcarsAudioEngine();
+
+        /* ==================== SHIP STATE & ROOM DATA ==================== */
+        const shipState = {
+            shuttles: 3,
+            fighters: 6,
+            photons: { fwd: 100, aft: 100 },
+            quantums: { fwd: 88, aft: 87 },
+            hullIntegrity: 84,
+            scienceTasks: [],
+            engTasks: [],
+            rooms: [
+                // Deck 1 - 2 (Bridge / Tactical Rollbar)
+                { id: 'room-bridge', name: 'Main Bridge', deck: 1, x: 500, y: 75, w: 90, h: 25, status: 'Normal', special: 'bridge' },
+                { id: 'room-tactical-core', name: 'Tactical Sensor Array', deck: 2, x: 440, y: 80, w: 50, h: 20, status: 'Normal' },
+                
+                // Deck 3 - 4 (Upper Saucer / Science)
+                { id: 'room-sci-1', name: 'Stellar Cartography', deck: 3, x: 350, y: 130, w: 70, h: 25, status: 'Normal' },
+                { id: 'room-sci-lab', name: 'Main Science Lab', deck: 4, x: 430, y: 130, w: 80, h: 25, status: 'Normal', special: 'science' },
+                { id: 'room-capt-q', name: 'Captain\'s Quarters', deck: 4, x: 520, y: 130, w: 65, h: 25, status: 'Normal' },
+                { id: 'room-comp-core', name: 'Main Computer Core', deck: 4, x: 590, y: 130, w: 70, h: 25, status: 'Normal' },
+
+                // Deck 5 - 6 (Middle Saucer / Sickbay & Torpedoes)
+                { id: 'room-sickbay', name: 'Sickbay & Medical', deck: 5, x: 300, y: 165, w: 75, h: 25, status: 'Normal' },
+                { id: 'room-torp-fwd', name: 'Forward Torpedo Bay', deck: 6, x: 385, y: 165, w: 85, h: 25, status: 'Normal', special: 'torpedo' },
+                { id: 'room-armory', name: 'Main Armory', deck: 6, x: 480, y: 165, w: 60, h: 25, status: 'Normal' },
+                { id: 'room-torp-aft', name: 'Aft Torpedo Pod', deck: 6, x: 550, y: 165, w: 85, h: 25, status: 'Normal', special: 'torpedo' },
+
+                // Deck 7 - 9 (Habitation / Life Support)
+                { id: 'room-transporter', name: 'Transporter Rooms 1-3', deck: 7, x: 280, y: 205, w: 80, h: 25, status: 'Normal' },
+                { id: 'room-crew-1', name: 'Crew Habitat Deck A', deck: 8, x: 370, y: 205, w: 90, h: 25, status: 'Normal' },
+                { id: 'room-mess', name: 'Mess Hall & Ten Forward', deck: 8, x: 470, y: 205, w: 70, h: 25, status: 'Normal' },
+                { id: 'room-crew-2', name: 'Crew Habitat Deck B', deck: 9, x: 550, y: 205, w: 90, h: 25, status: 'Normal' },
+
+                // Deck 10 - 11 (Shuttlebays)
+                { id: 'room-shuttlebay-1', name: 'Primary Shuttlebay', deck: 10, x: 260, y: 245, w: 120, h: 30, status: 'Normal', special: 'shuttle' },
+                { id: 'room-hydroponics', name: 'Hydroponics Bay', deck: 11, x: 400, y: 245, w: 80, h: 30, status: 'Normal' },
+                { id: 'room-deflector', name: 'Main Deflector Control', deck: 11, x: 490, y: 245, w: 90, h: 30, status: 'Normal' },
+
+                // Deck 12 - 13 (Engineering Core)
+                { id: 'room-engineering', name: 'Main Engineering', deck: 12, x: 320, y: 285, w: 110, h: 30, status: 'Normal', special: 'engineering' },
+                { id: 'room-deuterium', name: 'Deuterium Tanks', deck: 13, x: 440, y: 285, w: 90, h: 30, status: 'Normal' },
+                { id: 'room-warp-core', name: 'Warp Core Assembly', deck: 13, x: 540, y: 285, w: 80, h: 30, status: 'Normal' },
+
+                // Deck 14 - 15 (Cargo Bays & Auxiliary)
+                { id: 'room-cargo-1', name: 'Primary Cargo Bay 1', deck: 14, x: 350, y: 325, w: 100, h: 25, status: 'Normal' },
+                { id: 'room-cargo-2', name: 'Cargo Bay 2 & Storage', deck: 15, x: 460, y: 325, w: 100, h: 25, status: 'Normal' }
+            ]
+        };
+
+        /* Initialize Half of the Rooms Damaged Randomly */
+        function randomizeInitialDamage() {
+            const shuffled = [...shipState.rooms].sort(() => 0.5 - Math.random());
+            const halfCount = Math.floor(shuffled.length / 2);
+            shipState.rooms.forEach(r => r.status = 'Normal');
+            for (let i = 0; i < halfCount; i++) {
+                shuffled[i].status = 'Damaged';
+            }
+            renderSchematics();
+            updateSidebarStats();
+        }
+
+        function resetShipStatus() {
+            soundEngine.playBeep(700, 'sine', 0.1);
+            randomizeInitialDamage();
+        }
+
+        function repairAllRooms() {
+            soundEngine.playBeep(900, 'sine', 0.1);
+            shipState.rooms.forEach(r => r.status = 'Normal');
+            shipState.hullIntegrity = 100;
+            renderSchematics();
+            updateSidebarStats();
+        }
+
+        /* ==================== SCHEMATICS RENDERER ==================== */
+        function renderSchematics() {
+            const group = document.getElementById('rooms-group');
+            group.innerHTML = '';
+
+            shipState.rooms.forEach(room => {
+                let statusClass = 'status-normal';
+                if (room.status === 'Damaged') statusClass = 'status-damaged';
+                else if (room.status === 'Destroyed') statusClass = 'status-destroyed';
+                else if (room.status === 'Demolished') statusClass = 'status-demolished';
+                else if (room.status === 'Upgraded') statusClass = 'status-upgraded';
+
+                // Create SVG rect for each room
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', room.x);
+                rect.setAttribute('y', room.y);
+                rect.setAttribute('width', room.w);
+                rect.setAttribute('height', room.h);
+                rect.setAttribute('rx', 4);
+                rect.setAttribute('class', `${statusClass} cursor-pointer transition-all duration-200 hover:opacity-100`);
+                rect.setAttribute('stroke-width', '1.5');
+
+                // Hover & Click Actions
+                rect.addEventListener('mouseenter', () => {
+                    document.getElementById('selected-room-name').innerText = `[DECK ${room.deck}] ${room.name} (${room.status.toUpperCase()})`;
+                });
+
+                rect.addEventListener('click', () => {
+                    soundEngine.playBeep(850, 'sine', 0.08);
+                    if (room.special === 'bridge') openModal('bridgeModal');
+                    else if (room.special === 'science') openModal('scienceModal');
+                    else if (room.special === 'engineering') openModal('engineeringModal');
+                    else if (room.special === 'torpedo') openModal('torpedoModal');
+                    else if (room.special === 'shuttle') openModal('shuttleModal');
+                    else {
+                        // Open Engineering repair modal with this room pre-selected
+                        openModal('engineeringModal');
+                        document.getElementById('engTaskType').value = 'Repair Room';
+                        toggleRoomSelect();
+                        document.getElementById('engRoomSelect').value = room.id;
+                    }
+                });
+
+                // Add Text Label in SVG room
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', room.x + room.w / 2);
+                text.setAttribute('y', room.y + room.h / 2 + 3);
+                text.setAttribute('fill', '#ffffff');
+                text.setAttribute('font-size', '8');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('pointer-events', 'none');
+                text.setAttribute('font-family', 'Antonio');
+                text.textContent = room.name.length > 15 ? room.name.substring(0, 13) + '..' : room.name;
+
+                group.appendChild(rect);
+                group.appendChild(text);
+            });
+
+            populateRoomSelectDropdown();
+        }
+
+        function populateRoomSelectDropdown() {
+            const select = document.getElementById('engRoomSelect');
+            select.innerHTML = '';
+            shipState.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = `[DECK ${r.deck}] ${r.name} (${r.status})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateSidebarStats() {
+            const damagedCount = shipState.rooms.filter(r => r.status === 'Damaged').length;
+            document.getElementById('sidebar-damaged').innerText = damagedCount;
+            document.getElementById('sidebar-hull').innerText = `${shipState.hullIntegrity}%`;
+            document.getElementById('sidebar-teams').innerText = shipState.engTasks.length;
+
+            document.getElementById('fwd-photon-count').innerText = shipState.photons.fwd;
+            document.getElementById('aft-photon-count').innerText = shipState.photons.aft;
+            document.getElementById('fwd-quantum-count').innerText = shipState.quantums.fwd;
+            document.getElementById('aft-quantum-count').innerText = shipState.quantums.aft;
+
+            document.getElementById('shuttle-count-display').innerText = shipState.shuttles;
+            document.getElementById('fighter-count-display').innerText = shipState.fighters;
+        }
+
+        /* ==================== MODAL CONTROLLER ==================== */
+        function openModal(modalId) {
+            soundEngine.playBeep(700, 'sine', 0.1);
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.querySelectorAll('.modal-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(modalId).classList.remove('hidden');
+
+            if (modalId === 'bridgeModal') initBridgeCanvas();
+            if (modalId === 'torpedoModal') initTorpedoCanvas();
+        }
+
+        function closeModal() {
+            soundEngine.playBeep(450, 'sine', 0.08);
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        /* Switch view helper */
+        function switchView(view) {
+            soundEngine.playBeep(600, 'sine', 0.08);
+            if (view === 'schematics') closeModal();
+        }
+
+        /* ==================== SCIENCE LAB SYSTEM ==================== */
+        function startScienceResearch() {
+            const nameInput = document.getElementById('scienceTaskInput');
+            const cyclesInput = document.getElementById('scienceCyclesInput');
+            const name = nameInput.value.trim() || 'Subspace Anomaly Scan';
+            const cycles = parseInt(cyclesInput.value) || 10;
+
+            const task = {
+                id: Date.now(),
+                name: name,
+                duration: cycles,
+                remaining: cycles
+            };
+
+            shipState.scienceTasks.push(task);
+            soundEngine.playBeep(900, 'sine', 0.15);
+            nameInput.value = '';
+            renderScienceTasks();
+        }
+
+        function renderScienceTasks() {
+            const container = document.getElementById('scienceTasksList');
+            if (shipState.scienceTasks.length === 0) {
+                container.innerHTML = `<div class="text-slate-500 italic text-xs">No research tasks currently active.</div>`;
+                return;
+            }
+
+            container.innerHTML = shipState.scienceTasks.map(t => {
+                const percent = Math.round(((t.duration - t.remaining) / t.duration) * 100);
+                return `
+                    <div class="bg-black border border-[var(--lcars-gold)] p-2 rounded text-xs space-y-1">
+                        <div class="flex justify-between text-yellow-300 font-bold">
+                            <span>${t.name}</span>
+                            <span>${t.remaining}s</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded overflow-hidden">
+                            <div class="bg-[var(--lcars-gold)] h-full transition-all duration-1000" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ==================== MAIN ENGINEERING SYSTEM ==================== */
+        function toggleRoomSelect() {
+            const type = document.getElementById('engTaskType').value;
+            const container = document.getElementById('roomSelectContainer');
+            if (type.includes('Room')) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function dispatchEngTeam() {
+            const type = document.getElementById('engTaskType').value;
+            const roomId = document.getElementById('engRoomSelect').value;
+            const cycles = parseInt(document.getElementById('engCyclesInput').value) || 8;
+            const targetRoom = shipState.rooms.find(r => r.id === roomId);
+
+            const task = {
+                id: Date.now(),
+                type: type,
+                roomId: roomId,
+                roomName: targetRoom ? targetRoom.name : 'Vessel System',
+                duration: cycles,
+                remaining: cycles
+            };
+
+            shipState.engTasks.push(task);
+            soundEngine.playBeep(800, 'triangle', 0.15);
+            updateSidebarStats();
+            renderEngTasks();
+        }
+
+        function renderEngTasks() {
+            const container = document.getElementById('engTasksList');
+            if (shipState.engTasks.length === 0) {
+                container.innerHTML = `<div class="text-slate-500 italic text-xs">No engineering teams dispatched.</div>`;
+                return;
+            }
+
+            container.innerHTML = shipState.engTasks.map(t => {
+                const percent = Math.round(((t.duration - t.remaining) / t.duration) * 100);
+                return `
+                    <div class="bg-black border border-[var(--lcars-peach)] p-2 rounded text-xs space-y-1">
+                        <div class="flex justify-between text-[var(--lcars-peach)] font-bold">
+                            <span>TEAM #${t.id.toString().slice(-4)}: ${t.type} (${t.roomName})</span>
+                            <span>${t.remaining}s</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded overflow-hidden">
+                            <div class="bg-[var(--lcars-peach)] h-full transition-all duration-1000" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* Execute Task Completion Effects */
+        function completeEngTask(task) {
+            const room = shipState.rooms.find(r => r.id === task.roomId);
+            if (task.type === 'Repair Room' && room) room.status = 'Normal';
+            else if (task.type === 'Upgrade Room' && room) room.status = 'Upgraded';
+            else if (task.type === 'Demolish Room' && room) room.status = 'Demolished';
+            else if (task.type === 'Build Room' && room) room.status = 'Normal';
+            else if (task.type === 'Repair Hull') shipState.hullIntegrity = Math.min(100, shipState.hullIntegrity + 15);
+            else if (task.type === 'Craft Torpedoes') {
+                shipState.photons.fwd += 5;
+                shipState.quantums.fwd += 5;
+            } else if (task.type === 'Build Shuttle') shipState.shuttles += 1;
+            else if (task.type === 'Build Fighter') shipState.fighters += 1;
+
+            soundEngine.playBeep(1200, 'sine', 0.3);
+            renderSchematics();
+            updateSidebarStats();
+        }
+
+        /* ==================== PHASE CYCLE EXECUTION ENGINE ==================== */
+        function quickSetCycles(count) {
+            soundEngine.playBeep(750, 'sine', 0.05);
+            document.getElementById('phaseCycleInput').value = count;
+        }
+
+        function logCycleEvent(message) {
+            const logEl = document.getElementById('cycleNotificationLog');
+            if (logEl) {
+                logEl.innerText = `[LOG @ ${new Date().toLocaleTimeString()}] ${message}`;
+            }
+        }
+
+        function advanceCycles(cyclesToAdvance) {
+            if (cyclesToAdvance <= 0) return;
+
+            // Advance Science Research Tasks
+            shipState.scienceTasks.forEach(t => {
+                t.remaining = Math.max(0, t.remaining - cyclesToAdvance);
+            });
+            const finishedScience = shipState.scienceTasks.filter(t => t.remaining <= 0);
+            if (finishedScience.length > 0) {
+                soundEngine.playBeep(1000, 'sine', 0.25);
+                finishedScience.forEach(t => logCycleEvent(`SCIENCE TASK COMPLETED: ${t.name}`));
+                shipState.scienceTasks = shipState.scienceTasks.filter(t => t.remaining > 0);
+            }
+
+            // Advance Engineering Operations
+            shipState.engTasks.forEach(t => {
+                t.remaining = Math.max(0, t.remaining - cyclesToAdvance);
+            });
+            const finishedEng = shipState.engTasks.filter(t => t.remaining <= 0);
+            finishedEng.forEach(t => {
+                completeEngTask(t);
+                logCycleEvent(`ENGINEERING TASK COMPLETED: ${t.type} (${t.roomName})`);
+            });
+            if (finishedEng.length > 0) {
+                shipState.engTasks = shipState.engTasks.filter(t => t.remaining > 0);
+            }
+
+            // Refresh Active Interface Panels
+            if (!document.getElementById('scienceModal').classList.contains('hidden')) {
+                renderScienceTasks();
+            }
+            if (!document.getElementById('engineeringModal').classList.contains('hidden')) {
+                renderEngTasks();
+            }
+            updateSidebarStats();
+        }
+
+        function executePhaseCycle() {
+            const input = document.getElementById('phaseCycleInput');
+            const cycles = parseInt(input.value) || 1;
+            soundEngine.playBeep(900, 'triangle', 0.15);
+            logCycleEvent(`ADVANCED ${cycles} PHASE CYCLE(S)`);
+            advanceCycles(cycles);
+        }
+
+        /* Global Dynamic Timer Tick Cycle (1 Second Interval = 1 Cycle Realtime) */
+        setInterval(() => {
+            advanceCycles(1);
+        }, 1000);
+
+        /* ==================== TORPEDO BAY SYSTEM ==================== */
+        function fireTorpedo(type, launcher) {
+            if (type === 'photon') {
+                if (shipState.photons[launcher] <= 0) return;
+                shipState.photons[launcher] -= 1;
+                soundEngine.playPhotonTorpedo();
+                animateTorpedoLaunch('photon');
+            } else {
+                if (shipState.quantums[launcher] <= 0) return;
+                shipState.quantums[launcher] -= 1;
+                soundEngine.playQuantumTorpedo();
+                animateTorpedoLaunch('quantum');
+            }
+            updateSidebarStats();
+        }
+
+        let torpedoCanvas, torpedoCtx;
+        function initTorpedoCanvas() {
+            torpedoCanvas = document.getElementById('torpedoCanvas');
+            torpedoCanvas.width = torpedoCanvas.clientWidth;
+            torpedoCanvas.height = torpedoCanvas.clientHeight;
+            torpedoCtx = torpedoCanvas.getContext('2d');
+            torpedoCtx.fillStyle = '#000000';
+            torpedoCtx.fillRect(0, 0, torpedoCanvas.width, torpedoCanvas.height);
+        }
+
+        function animateTorpedoLaunch(type) {
+            if (!torpedoCtx) return;
+            const color = type === 'photon' ? '#ff3300' : '#00ffff';
+            document.getElementById('torpedoLog').innerText = `LAUNCHING ${type.toUpperCase()} TORPEDO... TACTICAL FLASH`;
+
+            let x = 20;
+            const y = torpedoCanvas.height / 2;
+            const interval = setInterval(() => {
+                torpedoCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                torpedoCtx.fillRect(0, 0, torpedoCanvas.width, torpedoCanvas.height);
+
+                torpedoCtx.beginPath();
+                torpedoCtx.arc(x, y, 8, 0, Math.PI * 2);
+                torpedoCtx.fillStyle = color;
+                torpedoCtx.shadowBlur = 15;
+                torpedoCtx.shadowColor = color;
+                torpedoCtx.fill();
+
+                x += 25;
+                if (x > torpedoCanvas.width + 20) {
+                    clearInterval(interval);
+                    document.getElementById('torpedoLog').innerText = `TORPEDO LAUNCH COMPLETE. SYSTEM READY.`;
+                }
+            }, 20);
+        }
+
+        /* ==================== SHUTTLEBAY CONTROL ==================== */
+        function adjustCraftCount(type, delta) {
+            soundEngine.playBeep(650, 'sine', 0.08);
+            if (type === 'shuttle') {
+                shipState.shuttles = Math.max(0, shipState.shuttles + delta);
+            } else {
+                shipState.fighters = Math.max(0, shipState.fighters + delta);
+            }
+            updateSidebarStats();
+        }
+
+        function launchCraft(craftName) {
+            if (craftName.includes('Shuttle') && shipState.shuttles <= 0) return;
+            if (craftName.includes('Fighter') && shipState.fighters <= 0) return;
+
+            soundEngine.playBeep(950, 'sine', 0.2);
+            document.getElementById('craftDisplayTitle').innerText = `COCKPIT FEED • ${craftName.toUpperCase()} ACTIVE LAUNCH`;
+            document.getElementById('craftDisplayStatus').innerText = `LAUNCH SEQUENCE INITIATED`;
+
+            const graphicContainer = document.getElementById('craftCockpitGraphic');
+            const isShuttle = craftName.includes('Shuttle');
+
+            // Render Cockpit SVG
+            graphicContainer.innerHTML = `
+                <svg viewBox="0 0 400 180" class="w-full h-full">
+                    <!-- Space Background -->
+                    <rect width="400" height="180" fill="#020617"/>
+                    <g fill="#ffffff">
+                        <circle cx="50" cy="30" r="1"/>
+                        <circle cx="120" cy="80" r="1.5"/>
+                        <circle cx="280" cy="40" r="1"/>
+                        <circle cx="340" cy="110" r="1"/>
+                    </g>
+
+                    <!-- Cockpit Window Frame -->
+                    <path d="M 0 0 L 120 40 L 280 40 L 400 0 L 400 180 L 280 140 L 120 140 L 0 180 Z" fill="#090d16" stroke="${isShuttle ? '#9999cc' : '#ff9900'}" stroke-width="2"/>
+
+                    <!-- Internal Controls HUD Overlay -->
+                    <line x1="120" y1="40" x2="120" y2="140" stroke="${isShuttle ? '#9999cc' : '#ff9900'}" stroke-width="1" stroke-dasharray="2 2"/>
+                    <line x1="280" y1="40" x2="280" y2="140" stroke="${isShuttle ? '#9999cc' : '#ff9900'}" stroke-width="1" stroke-dasharray="2 2"/>
+
+                    <!-- Target Reticle HUD -->
+                    <circle cx="200" cy="90" r="25" fill="none" stroke="${isShuttle ? '#3399cc' : '#ffcc00'}" stroke-width="1.5"/>
+                    <line x1="200" y1="60" x2="200" y2="120" stroke="${isShuttle ? '#3399cc' : '#ffcc00'}" stroke-width="1"/>
+                    <line x1="170" y1="90" x2="230" y2="90" stroke="${isShuttle ? '#3399cc' : '#ffcc00'}" stroke-width="1"/>
+                    <text x="200" y="130" fill="${isShuttle ? '#3399cc' : '#ffcc00'}" font-size="9" text-anchor="middle" font-family="Oswald">
+                        ${isShuttle ? 'TYPE-9 SHUTTLE COCKPIT HUD' : 'PEREGRINE TACTICAL HUD'}
+                    </text>
+                </svg>
+            `;
+        }
+
+        /* ==================== BRIDGE 3D/2D STARFIELD ANIMATION ==================== */
+        let bridgeCanvas, bridgeCtx, stars = [];
+        function initBridgeCanvas() {
+            bridgeCanvas = document.getElementById('bridgeViewscreenCanvas');
+            bridgeCanvas.width = bridgeCanvas.clientWidth;
+            bridgeCanvas.height = bridgeCanvas.clientHeight;
+            bridgeCtx = bridgeCanvas.getContext('2d');
+
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * bridgeCanvas.width - bridgeCanvas.width / 2,
+                    y: Math.random() * bridgeCanvas.height - bridgeCanvas.height / 2,
+                    z: Math.random() * bridgeCanvas.width
+                });
+            }
+
+            animateBridgeView();
+        }
+
+        function animateBridgeView() {
+            if (document.getElementById('bridgeModal').classList.contains('hidden')) return;
+
+            bridgeCtx.fillStyle = '#020617';
+            bridgeCtx.fillRect(0, 0, bridgeCanvas.width, bridgeCanvas.height);
+
+            const cx = bridgeCanvas.width / 2;
+            const cy = bridgeCanvas.height / 2;
+
+            stars.forEach(star => {
+                star.z -= 2;
+                if (star.z <= 0) star.z = bridgeCanvas.width;
+
+                const k = 128 / star.z;
+                const px = star.x * k + cx;
+                const py = star.y * k + cy;
+
+                if (px >= 0 && px < bridgeCanvas.width && py >= 0 && py < bridgeCanvas.height) {
+                    const size = (1 - star.z / bridgeCanvas.width) * 2.5;
+                    bridgeCtx.beginPath();
+                    bridgeCtx.arc(px, py, size, 0, Math.PI * 2);
+                    bridgeCtx.fillStyle = '#ffffff';
+                    bridgeCtx.fill();
+                }
+            });
+
+            requestAnimationFrame(animateBridgeView);
+        }
+
+        /* ==================== INITIALIZATION ==================== */
+        window.onload = function() {
+            // Clock Timer Update
+            setInterval(() => {
+                const now = new Date();
+                const stardate = (77000 + (now.getMonth() * 100) + now.getDate() + (now.getSeconds() / 60)).toFixed(1);
+                document.getElementById('stardate-clock').innerText = `STARDATE ${stardate}`;
+            }, 1000);
+
+            randomizeInitialDamage();
+        };
+    </script>
+</body>
+</html>
